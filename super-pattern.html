@@ -1,0 +1,210 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-meta/iron-meta.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<!--
+
+The `super-pattern` element displays an pattern. By default an pattern renders as a 24px square.
+
+Example using src:
+
+    <super-pattern src="star.png"></super-pattern>
+
+Example setting size to 32px x 32px:
+
+    <super-pattern class="big" src="big_star.png"></super-pattern>
+
+    <style is="custom-style">
+      .big {
+        --super-pattern-height: 32px;
+        --super-pattern-width: 32px;
+      }
+    </style>
+
+The iron elements include several sets of patterns.
+To use the default set of patterns, import `super-patterns.html` and use the `pattern` attribute to specify an pattern:
+
+    <link rel="import" href="/components/super-patterns/super-patterns.html">
+
+    <super-pattern pattern="menu"></super-pattern>
+
+To use a different built-in set of patterns, import the specific `super-patterns/<patternset>-patterns.html`, and
+specify the pattern as `<patternset>:<pattern>`. For example, to use a communication pattern, you would
+use:
+
+    <link rel="import" href="/components/super-patterns/communication-patterns.html">
+
+    <super-pattern pattern="communication:email"></super-pattern>
+
+You can also create custom pattern sets of bitmap or SVG patterns.
+
+Example of using an pattern named `cherry` from a custom patternset with the ID `fruit`:
+
+    <super-pattern pattern="fruit:cherry"></super-pattern>
+
+See [super-patternset](super-patternset) and [super-patternset-svg](super-patternset-svg) for more information about
+how to create a custom patternset.
+
+See the [super-patterns demo](super-patterns?view=demo:demo/index.html) to see the patterns available
+in the various patternsets.
+
+To load a subset of patterns from one of the default `super-patterns` sets, you can
+use the [poly-pattern](https://poly-pattern.appspot.com/) tool. It allows you
+to select individual patterns, and creates an patternset from them that you can
+use directly in your elements.
+
+### Styling
+
+The following custom properties are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--super-pattern` | Mixin applied to the pattern | {}
+`--super-pattern-width` | Width of the pattern | `24px`
+`--super-pattern-height` | Height of the pattern | `24px`
+`--super-pattern-fill-color` | Fill color of the svg pattern | `currentcolor`
+`--super-pattern-stroke-color` | Stroke color of the svg pattern | none
+
+@group Iron Elements
+@element super-pattern
+@demo demo/index.html
+@hero hero.svg
+@homepage polymer.github.io
+-->
+
+<dom-module id="super-pattern">
+  <template>
+    <style>
+      :host {
+        @apply(--layout-inline);
+        @apply(--layout-center-center);
+        position: relative;
+
+        vertical-align: middle;
+
+        fill: var(--super-pattern-fill-color, currentcolor);
+        stroke: var(--super-pattern-stroke-color, none);
+
+        width: var(--super-pattern-width, 24px);
+        height: var(--super-pattern-height, 24px);
+        @apply(--super-pattern);
+      }
+    </style>
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'super-pattern',
+
+      properties: {
+
+        /**
+         * The name of the pattern to use. The name should be of the form:
+         * `patternset_name:pattern_name`.
+         */
+        pattern: {
+          type: String
+        },
+
+        /**
+         * The name of the theme to used, if one is specified by the
+         * patternset.
+         */
+        theme: {
+          type: String
+        },
+
+        /**
+         * If using super-pattern without an patternset, you can set the src to be
+         * the URL of an individual pattern image file. Note that this will take
+         * precedence over a given pattern attribute.
+         */
+        src: {
+          type: String
+        },
+
+        /**
+         * @type {!Polymer.IronMeta}
+         */
+        _meta: {
+          value: Polymer.Base.create('iron-meta', {type: 'patternset'})
+        }
+
+      },
+
+      observers: [
+        '_updatepattern(_meta, isAttached)',
+        '_updatepattern(theme, isAttached)',
+        '_srcChanged(src, isAttached)',
+        '_patternChanged(pattern, isAttached)'
+      ],
+
+      _DEFAULT_patternsET: 'patterns',
+
+      _patternChanged: function(pattern) {
+        var parts = (pattern || '').split(':');
+        this._patternName = parts.pop();
+        this._patternsetName = parts.pop() || this._DEFAULT_patternsET;
+        this._updatepattern();
+      },
+
+      _srcChanged: function(src) {
+        this._updatepattern();
+      },
+
+      _usespatternset: function() {
+        return this.pattern || !this.src;
+      },
+
+      /** @suppress {visibility} */
+      _updatepattern: function() {
+        if (this._usespatternset()) {
+          if (this._img && this._img.parentNode) {
+            Polymer.dom(this.root).removeChild(this._img);
+          }
+          if (this._patternName === "") {
+            if (this._patternset) {
+              this._patternset.removepattern(this);
+            }
+          } else if (this._patternsetName && this._meta) {
+            this._patternset = /** @type {?Polymer.patternset} */ (
+              this._meta.byKey(this._patternsetName));
+            if (this._patternset) {
+              this._patternset.applypattern(this, this._patternName, this.theme);
+              this.unlisten(window, 'super-patternset-added', '_updatepattern');
+            } else {
+              this.listen(window, 'super-patternset-added', '_updatepattern');
+            }
+          }
+        } else {
+          if (this._patternset) {
+            this._patternset.removepattern(this);
+          }
+          if (!this._img) {
+            this._img = document.createElement('img');
+            this._img.style.width = '100%';
+            this._img.style.height = '100%';
+            this._img.draggable = false;
+          }
+          this._img.src = this.src;
+          Polymer.dom(this.root).appendChild(this._img);
+        }
+      }
+
+    });
+
+  </script>
+
+</dom-module>
