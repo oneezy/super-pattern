@@ -14,7 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!--
 
-The `super-pattern` element displays an pattern. By default an pattern renders as a 24px square.
+The `super-pattern` element displays a pattern. By default a pattern renders as a 24px repeating square.
 
 Example using src:
 
@@ -31,8 +31,8 @@ Example setting size to 32px x 32px:
       }
     </style>
 
-The iron elements include several sets of patterns.
-To use the default set of patterns, import `super-patterns.html` and use the `pattern` attribute to specify an pattern:
+The super-pattern elements include several sets of patterns.
+To use the default set of patterns, import `super-patterns.html` and use the `pattern` attribute to specify a pattern:
 
     <link rel="import" href="/components/super-patterns/super-patterns.html">
 
@@ -52,7 +52,7 @@ Example of using an pattern named `cherry` from a custom patternset with the ID 
 
     <super-pattern pattern="fruit:cherry"></super-pattern>
 
-See [super-patternset](super-patternset) and [super-patternset-svg](super-patternset-svg) for more information about
+See [super-patterns](super-patterns) and [super-patternset-svg](super-patternset-svg) for more information about
 how to create a custom patternset.
 
 See the [super-patterns demo](super-patterns?view=demo:demo/index.html) to see the patterns available
@@ -75,7 +75,7 @@ Custom property | Description | Default
 `--super-pattern-fill-color` | Fill color of the svg pattern | `currentcolor`
 `--super-pattern-stroke-color` | Stroke color of the svg pattern | none
 
-@group Iron Elements
+@group super-pattern elements
 @element super-pattern
 @demo demo/index.html
 @hero hero.svg
@@ -151,12 +151,12 @@ Custom property | Description | Default
         '_patternChanged(pattern, isAttached)'
       ],
 
-      _DEFAULT_patternsET: 'patterns',
+      _DEFAULT_patternSET: 'patterns',
 
       _patternChanged: function(pattern) {
         var parts = (pattern || '').split(':');
         this._patternName = parts.pop();
-        this._patternsetName = parts.pop() || this._DEFAULT_patternsET;
+        this._patternsetName = parts.pop() || this._DEFAULT_patternSET;
         this._updatepattern();
       },
 
